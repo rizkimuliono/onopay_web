@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\ApiDocumentationController;
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
@@ -21,4 +22,7 @@ Route::middleware(['web', 'admin'])->group(function () {
 Route::get('/', function () {
     return redirect()->route('dashboard');
 });
+
+// API Documentation (Public)
+Route::get('/api-docs', [ApiDocumentationController::class, 'index'])->name('api-docs');
 

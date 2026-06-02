@@ -3,11 +3,14 @@
 @section('title', 'Daftar Transaksi - OnoPay Admin')
 
 @section('content')
-<div class="container-fluid">
-    <h1 class="mb-4"><i class="bi bi-arrow-left-right"></i> Daftar Transaksi</h1>
+<!-- Header Section -->
+<div style="background-color: white; padding: 25px 30px; margin: -25px -30px 30px -30px; border-bottom: 2px solid #e6f2ff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+    <h1 style="color: #003d7a; font-weight: 600; margin: 0; font-size: 2rem;"><i class="bi bi-arrow-left-right"></i> Daftar Transaksi</h1>
+</div>
 
+<div class="container-fluid">
     <!-- Filter Card -->
-    <div class="card mb-4">
+    <div class="card mb-4 w-100">
         <div class="card-header">
             <i class="bi bi-funnel"></i> Filter & Pencarian
         </div>
@@ -47,15 +50,15 @@
     </div>
 
     <!-- Transactions Table -->
-    <div class="card">
+    <div class="card w-100">
         <div class="card-header">
             <i class="bi bi-list-check"></i> Transaksi
             <span class="badge bg-secondary float-end">{{ $transactions->total() }} data</span>
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             @if ($transactions->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover mb-0 w-100">
                         <thead>
                             <tr>
                                 <th>ID Transaksi</th>
@@ -134,11 +137,13 @@
                 </div>
 
                 <!-- Pagination -->
-                <nav class="d-flex justify-content-center mt-4">
-                    {{ $transactions->links('pagination::bootstrap-5') }}
-                </nav>
+                <div class="p-3">
+                    <nav class="d-flex justify-content-center">
+                        {{ $transactions->links('pagination::bootstrap-5') }}
+                    </nav>
+                </div>
             @else
-                <div class="alert alert-info">
+                <div class="alert alert-info m-3">
                     <i class="bi bi-info-circle"></i> Transaksi tidak ditemukan
                 </div>
             @endif

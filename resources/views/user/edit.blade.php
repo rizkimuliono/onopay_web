@@ -3,13 +3,13 @@
 @section('title', 'Edit User')
 
 @section('content')
-<div class="content">
-    <!-- Header -->
-    <div class="mb-4">
-        <h1 class="h3 mb-1" style="color: #003d7a; font-weight: 600;">Edit User</h1>
-        <p style="color: #666; margin: 0;">Nomor Telepon: <strong>{{ $user->phone_number }}</strong></p>
-    </div>
+<!-- Header Section -->
+<div style="background-color: white; padding: 25px 30px; margin: -25px -30px 30px -30px; border-bottom: 2px solid #e6f2ff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+    <h1 style="color: #003d7a; font-weight: 600; margin: 0 0 5px 0; font-size: 2rem;"><i class="bi bi-pencil-square"></i> Edit User</h1>
+    <p style="color: #666; margin: 0; font-size: 0.95rem;">Nomor Telepon: <strong>{{ $user->phone_number }}</strong></p>
+</div>
 
+<div class="content">
     <!-- Form Card -->
     <div class="card" style="border: none; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-radius: 8px;">
         <div class="card-body p-4">

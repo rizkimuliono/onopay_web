@@ -3,23 +3,23 @@
 @section('title', 'Detail User')
 
 @section('content')
-<div class="content">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <div>
-            <h1 class="h3 mb-1" style="color: #003d7a; font-weight: 600;">Detail User</h1>
-            <p style="color: #666; margin: 0;">Nomor Telepon: <strong>{{ $user->phone_number }}</strong></p>
-        </div>
-        <div>
-            <a href="{{ route('user.edit', $user->id) }}" class="btn btn-warning me-2" style="background-color: #ffc107; border: none; color: #333;">
-                <i class="bi bi-pencil"></i> Edit
-            </a>
-            <a href="{{ route('user.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-        </div>
+<!-- Header Section -->
+<div style="background-color: white; padding: 25px 30px; margin: -25px -30px 30px -30px; border-bottom: 2px solid #e6f2ff; box-shadow: 0 2px 4px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; flex-wrap: wrap;">
+    <div>
+        <h1 style="color: #003d7a; font-weight: 600; margin: 0 0 5px 0; font-size: 2rem;"><i class="bi bi-person-badge"></i> Detail User</h1>
+        <p style="color: #666; margin: 0; font-size: 0.95rem;">Nomor Telepon: <strong>{{ $user->phone_number }}</strong></p>
     </div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: flex-end;">
+        <a href="{{ route('user.edit', $user->id) }}" class="btn btn-warning" style="background-color: #ffc107; border: none; color: #333; white-space: nowrap;">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+        <a href="{{ route('user.index') }}" class="btn btn-outline-secondary" style="white-space: nowrap;">
+            <i class="bi bi-arrow-left"></i> Kembali
+        </a>
+    </div>
+</div>
 
+<div class="content">
     <!-- Main Info Card -->
     <div class="row mb-4">
         <!-- User Basic Info -->

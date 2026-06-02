@@ -3,9 +3,12 @@
 @section('title', 'Dashboard - OnoPay Admin')
 
 @section('content')
-<div class="container-fluid">
-    <h1 class="mb-4"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+<!-- Header Section -->
+<div style="background-color: white; padding: 25px 30px; margin: -25px -30px 30px -30px; border-bottom: 2px solid #e6f2ff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+    <h1 style="color: #003d7a; font-weight: 600; margin: 0; font-size: 2rem;"><i class="bi bi-speedometer2"></i> Dashboard</h1>
+</div>
 
+<div class="container-fluid">
     <!-- Statistics Cards Row -->
     <div class="row mb-4">
         <div class="col-md-6 col-lg-3">
@@ -42,14 +45,14 @@
     </div>
 
     <!-- Recent Transactions -->
-    <div class="card">
+    <div class="card w-100">
         <div class="card-header">
             <i class="bi bi-list-check"></i> Transaksi Terbaru
         </div>
-        <div class="card-body">
+        <div class="card-body p-0">
             @if ($recentTransactions->count() > 0)
                 <div class="table-responsive">
-                    <table class="table table-hover">
+                    <table class="table table-hover mb-0 w-100">
                         <thead>
                             <tr>
                                 <th>ID Transaksi</th>
@@ -113,7 +116,7 @@
                     </table>
                 </div>
             @else
-                <div class="alert alert-info">
+                <div class="alert alert-info m-3">
                     <i class="bi bi-info-circle"></i> Belum ada transaksi
                 </div>
             @endif

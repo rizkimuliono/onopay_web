@@ -3,15 +3,15 @@
 @section('title', 'Data User')
 
 @section('content')
-<div class="content">
-    <!-- Header -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 mb-0" style="color: #003d7a; font-weight: 600;">Data User</h1>
-        <a href="{{ route('user.create') }}" class="btn btn-primary">
-            <i class="bi bi-plus-circle"></i> Tambah User
-        </a>
-    </div>
+<!-- Header Section -->
+<div style="background-color: white; padding: 25px 30px; margin: -25px -30px 30px -30px; border-bottom: 2px solid #e6f2ff; box-shadow: 0 2px 4px rgba(0,0,0,0.03); display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap;">
+    <h1 style="color: #003d7a; font-weight: 600; margin: 0; font-size: 2rem;"><i class="bi bi-people"></i> Data User</h1>
+    <a href="{{ route('user.create') }}" class="btn btn-primary" style="white-space: nowrap;">
+        <i class="bi bi-plus-circle"></i> Tambah User
+    </a>
+</div>
 
+<div class="content">
     <!-- Alert Messages -->
     @if ($message = Session::get('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">

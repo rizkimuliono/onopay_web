@@ -252,6 +252,9 @@
                 <a class="nav-link {{ request()->routeIs('transaction.*') ? 'active' : '' }}" href="{{ route('transaction.index') }}">
                     <i class="bi bi-arrow-left-right"></i> Transaksi
                 </a>
+                <a class="nav-link {{ request()->routeIs('api-docs') ? 'active' : '' }}" href="{{ route('api-docs') }}" target="_blank">
+                    <i class="bi bi-book"></i> API Documentation
+                </a>
             </nav>
         </div>
 
