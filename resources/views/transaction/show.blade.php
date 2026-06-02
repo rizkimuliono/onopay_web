@@ -4,10 +4,11 @@
 
 @section('content')
 <div class="container-fluid">
+    <div style="background-color: white; padding: 25px 30px; margin: -25px -30px 30px -30px; border-bottom: 2px solid #e6f2ff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+        <h1 style="color: #003d7a; font-weight: 600; margin: 0; font-size: 2rem;"><i class="bi bi-arrow-left-right"></i> Detail Transaksi</h1>
+    </div>
+
     <div class="row mb-4">
-        <div class="col">
-            <h1><i class="bi bi-arrow-left-right"></i> Detail Transaksi</h1>
-        </div>
         <div class="col text-end">
             <a href="{{ route('transaction.index') }}" class="btn btn-outline-secondary">
                 <i class="bi bi-arrow-left"></i> Kembali
@@ -21,7 +22,7 @@
     <div class="row">
         <!-- Main Info -->
         <div class="col-lg-8">
-            <div class="card mb-4">
+            <div class="card mb-4 w-100">
                 <div class="card-header">
                     <i class="bi bi-info-circle"></i> Informasi Transaksi
                 </div>
@@ -104,7 +105,7 @@
             </div>
 
             <!-- Notes -->
-            <div class="card">
+            <div class="card w-100">
                 <div class="card-header">
                     <i class="bi bi-chat-left-text"></i> Catatan Admin
                 </div>
@@ -120,7 +121,7 @@
 
         <!-- User Info Sidebar -->
         <div class="col-lg-4">
-            <div class="card mb-4">
+            <div class="card mb-4 w-100">
                 <div class="card-header">
                     <i class="bi bi-person"></i> Data Pengguna
                 </div>
@@ -167,7 +168,7 @@
             </div>
 
             <!-- Action -->
-            <div class="card">
+            <div class="card w-100">
                 <div class="card-header">
                     <i class="bi bi-wrench"></i> Aksi
                 </div>

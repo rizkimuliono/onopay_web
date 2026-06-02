@@ -4,10 +4,13 @@
 
 @section('content')
 <div class="container-fluid">
+    <div style="background-color: white; padding: 25px 30px; margin: -25px -30px 30px -30px; border-bottom: 2px solid #e6f2ff; box-shadow: 0 2px 4px rgba(0,0,0,0.03);">
+        <h1 style="color: #003d7a; font-weight: 600; margin: 0; font-size: 2rem;"><i class="bi bi-pencil"></i> Edit Transaksi</h1>
+    </div>
+
     <div class="row mb-4">
         <div class="col">
-            <h1><i class="bi bi-pencil"></i> Edit Transaksi</h1>
-            <p class="text-muted">ID: <code>{{ $transaction->transaction_id }}</code></p>
+            <p class="text-muted mb-0">ID: <code>{{ $transaction->transaction_id }}</code></p>
         </div>
         <div class="col text-end">
             <a href="{{ route('transaction.show', $transaction) }}" class="btn btn-outline-secondary">
@@ -18,7 +21,7 @@
 
     <div class="row">
         <div class="col-lg-8">
-            <div class="card">
+            <div class="card w-100">
                 <div class="card-header">
                     <i class="bi bi-form-check"></i> Form Edit Transaksi
                 </div>
@@ -43,7 +46,7 @@
                             <div class="col-md-6">
                                 <label class="form-label">Tipe Transaksi</label>
                                 <input type="text" class="form-control"
-                                       value="@switch($transaction->type)@case('payment')Pembayaran@break@case('topup')Topup@break@case('transfer')Transfer@break@endswitch"
+                                       value="@switch($transaction->type)@case('payment')Pembayaran@break@case('topup')Topup@break@case('transfer')Transfer@break@default{{ ucfirst($transaction->type) }}@endswitch"
                                        disabled>
                             </div>
                             <div class="col-md-6">
@@ -111,7 +114,7 @@
 
         <!-- Info Sidebar -->
         <div class="col-lg-4">
-            <div class="card mb-4">
+            <div class="card mb-4 w-100">
                 <div class="card-header">
                     <i class="bi bi-clock-history"></i> Riwayat
                 </div>
@@ -144,7 +147,7 @@
                 </div>
             </div>
 
-            <div class="card">
+            <div class="card w-100">
                 <div class="card-header">
                     <i class="bi bi-exclamation-triangle"></i> Catatan Penting
                 </div>
