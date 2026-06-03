@@ -8,6 +8,11 @@ use App\Models\QRCode;
 use App\Models\SystemSetting;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiValidation;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -187,8 +192,69 @@ class PaymentController extends Controller
                 'qr_mode' => $qrMode,
                 'expires_at' => $qr->expires_at ? $qr->expires_at->toIso8601String() : null,
                 'description' => $qr->description,
+                'qr_image_url' => route('api.payment.qr-image', ['qrCode' => $qrCode]),
+                'qr_image_base64' => $this->generateQrBase64($qrCode),
             ],
         ]);
+    }
+
+    /**
+     * Serve QR code image (PNG) for third-party integration.
+     */
+    public function qrImage(string $qrCode)
+    {
+        $qr = QRCode::where('code', $qrCode)->first();
+
+        if (!$qr) {
+            return response()->json([
+                'success' => false,
+                'message' => 'QR code tidak ditemukan',
+            ], 404);
+        }
+
+        if ($qr->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'QR code tidak aktif',
+            ], 403);
+        }
+
+        if ($qr->expires_at && $qr->expires_at < now()) {
+            $qr->update(['status' => 'expired']);
+            return response()->json([
+                'success' => false,
+                'message' => 'QR code sudah expired',
+            ], 403);
+        }
+
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->data($qrCode)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
+            ->size(400)
+            ->margin(10)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->build();
+
+        return response($result->getString(), 200)
+            ->header('Content-Type', 'image/png')
+            ->header('Cache-Control', 'public, max-age=60');
+    }
+
+    private function generateQrBase64(string $data): string
+    {
+        $result = Builder::create()
+            ->writer(new PngWriter())
+            ->data($data)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
+            ->size(400)
+            ->margin(10)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->build();
+
+        return 'data:image/png;base64,' . base64_encode($result->getString());
     }
 
     /**

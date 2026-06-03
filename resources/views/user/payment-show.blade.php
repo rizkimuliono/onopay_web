@@ -6,7 +6,6 @@
     <title>QR Code Pembayaran - OnoPay</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
     <style>
         :root {
             --primary-dark: #003d7a;
@@ -68,9 +67,13 @@
             min-height: 250px;
         }
 
-        #qrcode {
+        .qr-image {
             max-width: 100%;
-            height: auto;
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            background: #fff;
+            border-radius: 8px;
         }
 
         .code-text {
@@ -226,7 +229,7 @@
 
         <!-- QR Code Display -->
         <div class="qr-box">
-            <div id="qrcode"></div>
+            <img src="{{ $qrImageBase64 }}" alt="QR Code {{ $qr->code }}" class="qr-image">
         </div>
 
         <!-- QR Code Text -->
@@ -259,16 +262,6 @@
     </div>
 
     <script>
-        // Generate QR Code
-        const qrCode = new QRCode(document.getElementById('qrcode'), {
-            text: '{{ $qr->code }}',
-            width: 200,
-            height: 200,
-            colorDark: '#003d7a',
-            colorLight: '#ffffff',
-            correctLevel: QRCode.CorrectLevel.H
-        });
-
         @if ($qr->qr_mode === 'single_use')
         // Countdown Timer
         function updateCountdown() {
@@ -295,9 +288,8 @@
 
         // Download QR Code
         function downloadQR() {
-            const canvas = document.querySelector('#qrcode canvas');
             const link = document.createElement('a');
-            link.href = canvas.toDataURL();
+            link.href = '{{ $qrImageBase64 }}';
             link.download = 'qr-payment-{{ $qr->code }}.png';
             link.click();
         }

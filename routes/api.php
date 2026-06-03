@@ -13,4 +13,5 @@ Route::middleware(['json.response'])->prefix('v1')->group(function () {
     Route::post('/payment/topup', [PaymentController::class, 'topup']);
     Route::post('/payment/qr/generate', [PaymentController::class, 'generateQR']);
     Route::post('/payment/qr/pay', [PaymentController::class, 'paymentQR']);
+    Route::get('/payment/qr/image/{qrCode}', [PaymentController::class, 'qrImage'])->name('api.payment.qr-image');
 });

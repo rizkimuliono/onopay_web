@@ -6,6 +6,11 @@ use App\Models\User;
 use App\Models\Transaction;
 use App\Models\QRCode;
 use App\Models\SystemSetting;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\ErrorCorrectionLevel;
+use Endroid\QrCode\RoundBlockSizeMode;
+use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
@@ -111,7 +116,22 @@ class UserDashboardController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        return view('user.payment-show', ['qr' => $qr]);
+        $qrResult = Builder::create()
+            ->writer(new PngWriter())
+            ->data($qr->code)
+            ->encoding(new Encoding('UTF-8'))
+            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
+            ->size(400)
+            ->margin(10)
+            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
+            ->build();
+
+        $qrImageBase64 = 'data:image/png;base64,' . base64_encode($qrResult->getString());
+
+        return view('user.payment-show', [
+            'qr' => $qr,
+            'qrImageBase64' => $qrImageBase64,
+        ]);
     }
 
     // Show payment confirmation (untuk pembayar)
