@@ -43,6 +43,11 @@ class AdminTopupController extends Controller
         }
 
         try {
+            $admin = auth('admin')->user();
+            if (!$admin) {
+                return back()->withErrors(['error' => 'Admin tidak terdeteksi. Silakan login kembali']);
+            }
+
             // Update user balance
             $user = $topup->user;
             $user->balance += $topup->amount;
@@ -52,10 +57,11 @@ class AdminTopupController extends Controller
             $topup->update([
                 'status' => 'success',
                 'completed_at' => now(),
-                'notes' => 'Approved by ' . auth()->user()->name,
+                'notes' => 'Approved by ' . $admin->name,
             ]);
 
-            return back()->with('success', 'Topup berhasil disetujui! Saldo user ditambah Rp ' . number_format($topup->amount, 0));
+            $message = 'Topup berhasil disetujui! Saldo user ' . $user->name . ' ditambah Rp ' . number_format($topup->amount, 0);
+            return back()->with('success', $message);
         } catch (\Exception $e) {
             return back()->withErrors(['error' => 'Gagal approve topup: ' . $e->getMessage()]);
         }
@@ -174,6 +180,11 @@ class AdminTopupController extends Controller
         ]);
 
         try {
+            $admin = auth('admin')->user();
+            if (!$admin) {
+                return back()->withErrors(['error' => 'Admin tidak terdeteksi. Silakan login kembali']);
+            }
+
             $user = User::findOrFail($validated['user_id']);
             $amount = (float)$validated['amount'];
             $balanceBefore = $user->balance;
@@ -194,7 +205,7 @@ class AdminTopupController extends Controller
             // Record adjustment
             BalanceAdjustment::create([
                 'user_id' => $user->id,
-                'admin_id' => auth()->user()->id,
+                'admin_id' => $admin->id,
                 'amount' => $amount,
                 'type' => $validated['type'],
                 'reason' => $validated['reason'],
