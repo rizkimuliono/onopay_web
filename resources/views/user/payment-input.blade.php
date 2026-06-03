@@ -292,15 +292,25 @@
         <div id="scannerContainer" style="display: none; margin-top: 20px;">
             <div class="card" style="padding: 20px;">
                 <div style="text-align: center; margin-bottom: 15px;">
-                    <h5 style="color: var(--primary-dark);">Aktifkan Kamera</h5>
-                    <small style="color: #999;">Arahkan kamera ke QR Code</small>
+                    <h5 style="color: var(--primary-dark);">Kamera Aktif</h5>
+                    <small style="color: #999;">Arahkan kamera ke QR Code untuk scan...</small>
+                    <div style="margin-top: 10px; animation: pulse 1.5s infinite;">
+                        <i class="bi bi-record-circle" style="color: #ef4444; font-size: 1.5rem;"></i>
+                    </div>
                 </div>
-                <video id="video" style="width: 100%; border-radius: 8px; margin-bottom: 15px;"></video>
+                <video id="video" style="width: 100%; border-radius: 8px; margin-bottom: 15px; background: #000;"></video>
                 <button type="button" class="btn-secondary-custom" style="width: 100%;" onclick="stopScanner()">
                     <i class="bi bi-x-circle"></i> Tutup Kamera
                 </button>
             </div>
         </div>
+
+        <style>
+            @keyframes pulse {
+                0%, 100% { opacity: 1; }
+                50% { opacity: 0.5; }
+            }
+        </style>
     </div>
 
     <!-- Bottom Navigation -->
@@ -324,7 +334,13 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- QR Code Detection Library -->
+    <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+
     <script>
+        let scannerActive = false;
+        let scannerAnimationId = null;
+
         function handleSubmit(e) {
             e.preventDefault();
             const qrCode = document.getElementById('qrCode').value.trim().toUpperCase();
@@ -358,6 +374,7 @@
             const video = document.getElementById('video');
 
             scannerContainer.style.display = 'block';
+            scannerActive = true;
 
             // Check for browser support
             if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
@@ -366,19 +383,116 @@
                 }).then(stream => {
                     video.srcObject = stream;
                     video.play();
+
+                    // Wait for video metadata to be loaded before starting detection
+                    if (video.readyState >= video.HAVE_FUTURE_DATA) {
+                        // Video already has data
+                        scanQRCode(video);
+                    } else {
+                        // Wait for loadedmetadata event
+                        video.onloadedmetadata = () => {
+                            console.log('Video metadata loaded, starting QR scan');
+                            scanQRCode(video);
+                        };
+                    }
                 }).catch(err => {
                     showError('Tidak dapat mengakses kamera. Silakan gunakan input manual.');
                     scannerContainer.style.display = 'none';
+                    scannerActive = false;
                     console.error('Camera error:', err);
                 });
             } else {
                 showError('Browser Anda tidak mendukung akses kamera');
+                scannerActive = false;
             }
+        }
+
+        function scanQRCode(video) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const qrCodeInput = document.getElementById('qrCode');
+
+            function detectQR() {
+                if (!scannerActive || !video.srcObject) {
+                    return;
+                }
+
+                // Safety check: ensure video has valid dimensions
+                if (video.videoWidth === 0 || video.videoHeight === 0) {
+                    console.log('Video dimensions not ready yet');
+                    scannerAnimationId = requestAnimationFrame(detectQR);
+                    return;
+                }
+
+                // Update canvas dimensions if different
+                if (canvas.width !== video.videoWidth || canvas.height !== video.videoHeight) {
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                }
+
+                try {
+                    // Draw current video frame to canvas
+                    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+
+                    // Try to detect QR code
+                    const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                    if (code) {
+                        // QR code detected!
+                        const qrValue = code.data.trim().toUpperCase();
+                        console.log('QR Code Detected:', qrValue);
+
+                        // Fill the input with detected QR code
+                        qrCodeInput.value = qrValue;
+
+                        // Auto-submit or show success
+                        showSuccess(`QR Code terdeteksi: ${qrValue}`);
+
+                        // Stop scanner after successful detection
+                        setTimeout(() => {
+                            stopScanner();
+                        }, 1500);
+
+                        return;
+                    }
+                } catch (e) {
+                    console.error('QR detection error:', e);
+                }
+
+                // Continue scanning
+                scannerAnimationId = requestAnimationFrame(detectQR);
+            }
+
+            // Start detection
+            detectQR();
+        }
+
+        function showSuccess(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            errorDiv.style.background = '#d4edda';
+            errorDiv.style.color = '#155724';
+            errorDiv.style.borderColor = '#c3e6cb';
+
+            setTimeout(() => {
+                errorDiv.style.display = 'none';
+                errorDiv.style.background = '#f8d7da';
+                errorDiv.style.color = '#842029';
+                errorDiv.style.borderColor = '#f5c6cb';
+            }, 3000);
         }
 
         function stopScanner() {
             const video = document.getElementById('video');
             const scannerContainer = document.getElementById('scannerContainer');
+
+            scannerActive = false;
+
+            if (scannerAnimationId) {
+                cancelAnimationFrame(scannerAnimationId);
+            }
 
             if (video.srcObject) {
                 video.srcObject.getTracks().forEach(track => track.stop());
@@ -390,6 +504,11 @@
         // Auto focus on load
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('qrCode').focus();
+        });
+
+        // Stop scanner when page unloads
+        window.addEventListener('beforeunload', () => {
+            stopScanner();
         });
     </script>
 </body>
