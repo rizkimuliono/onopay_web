@@ -210,6 +210,7 @@
             <!-- Footer -->
             <div class="login-footer">
                 <p>Belum punya akun? <a href="{{ route('user.register') }}">Daftar di sini</a></p>
+                <p>Kembali ke landing page? <a href="{{ url('/') }}">Klik di sini</a></p>
             </div>
         </div>
 

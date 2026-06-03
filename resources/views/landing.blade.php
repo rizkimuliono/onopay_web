@@ -417,7 +417,7 @@
             <div class="navbar-nav ms-auto">
                 <a class="nav-link" href="#features">Fitur</a>
                 <a class="nav-link" href="#how">Cara Kerja</a>
-                <a class="nav-link" href="#docs" target="_blank">API Docs</a>
+                <a class="nav-link" href="{{ url('api-docs') }}" target="_blank">API Docs</a>
                 <a href="{{ route('user.login') }}" class="btn btn-login">
                     <i class="bi bi-person"></i> Login
                 </a>

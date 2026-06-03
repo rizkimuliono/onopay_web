@@ -18,6 +18,7 @@ class QRCode extends Model
         'qr_data',
         'status',
         'expires_at',
+        'qr_image',
     ];
 
     protected $casts = [

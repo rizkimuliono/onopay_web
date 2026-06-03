@@ -638,8 +638,7 @@ print(response.json())</pre>
         "qr_mode": "single_use",
     "expires_at": "2026-06-02T02:46:07+00:00",
         "description": "Pembayaran makanan",
-        "qr_image_url": "https://domain-aktif/api/v1/payment/qr/image/QR-ABCDEF123456",
-        "qr_image_base64": "data:image/png;base64,iVBORw0KGgoAAA..."
+        "qr_image": "https://domain-aktif/api/v1/payment/qr/image/QR-ABCDEF123456"
   }
 }</pre>
                     </div>

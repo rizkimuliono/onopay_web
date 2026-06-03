@@ -8,11 +8,6 @@ use App\Models\QRCode;
 use App\Models\SystemSetting;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiValidation;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\RoundBlockSizeMode;
-use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -169,6 +164,8 @@ class PaymentController extends Controller
 
         $expiresAt = $qrMode === 'reusable' ? null : now()->addMinutes(15);
 
+        $qrImageUrl = route('api.payment.qr-image', ['qrCode' => $qrCode]);
+
         // Create QR record
         $qr = QRCode::create([
             'code' => $qrCode,
@@ -177,6 +174,7 @@ class PaymentController extends Controller
             'amount' => $validated['amount'],
             'description' => $validated['description'] ?? 'Payment via QR Code',
             'qr_mode' => $qrMode,
+            'qr_image' => $qrImageUrl,
             'qr_data' => $qrData,
             'status' => 'active',
             'expires_at' => $expiresAt,
@@ -192,14 +190,13 @@ class PaymentController extends Controller
                 'qr_mode' => $qrMode,
                 'expires_at' => $qr->expires_at ? $qr->expires_at->toIso8601String() : null,
                 'description' => $qr->description,
-                'qr_image_url' => route('api.payment.qr-image', ['qrCode' => $qrCode]),
-                'qr_image_base64' => $this->generateQrBase64($qrCode),
+                'qr_image' => $qr->qr_image,
             ],
         ]);
     }
 
     /**
-     * Serve QR code image (PNG) for third-party integration.
+     * Return QR image URL detail for third-party integration.
      */
     public function qrImage(string $qrCode)
     {
@@ -227,34 +224,14 @@ class PaymentController extends Controller
             ], 403);
         }
 
-        $result = Builder::create()
-            ->writer(new PngWriter())
-            ->data($qrCode)
-            ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
-            ->size(400)
-            ->margin(10)
-            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
-            ->build();
-
-        return response($result->getString(), 200)
-            ->header('Content-Type', 'image/png')
-            ->header('Cache-Control', 'public, max-age=60');
-    }
-
-    private function generateQrBase64(string $data): string
-    {
-        $result = Builder::create()
-            ->writer(new PngWriter())
-            ->data($data)
-            ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
-            ->size(400)
-            ->margin(10)
-            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
-            ->build();
-
-        return 'data:image/png;base64,' . base64_encode($result->getString());
+        return response()->json([
+            'success' => true,
+            'message' => 'QR image URL tersedia',
+            'data' => [
+                'qr_code' => $qr->code,
+                'qr_image' => $qr->qr_image,
+            ],
+        ]);
     }
 
     /**
@@ -266,6 +243,9 @@ class PaymentController extends Controller
             $validated = $request->validate([
                 'qr_code' => 'required|string',
                 'payer_phone' => 'required|string',
+
+                    $qrImageUrl = route('api.payment.qr-image', ['qrCode' => $qrCode]);
+                    $qr->update(['qr_image' => $qrImageUrl]);
             ], [
                 'qr_code.required' => 'QR code is required',
                 'payer_phone.required' => 'Payer phone number is required',
@@ -277,8 +257,7 @@ class PaymentController extends Controller
                 'errors' => $e->errors(),
             ], 422);
         }
-
-        $qr = QRCode::where('code', $validated['qr_code'])->first();
+                            'qr_image' => $qrImageUrl,
 
         if (!$qr) {
             return response()->json([
@@ -327,20 +306,6 @@ class PaymentController extends Controller
         }
 
         // Process payment
-        try {
-            // Deduct from payer
-            $payer->balance -= $qr->amount;
-            $payer->save();
-
-            // Add to receiver
-            $receiver = $qr->user;
-            $receiver->balance += $qr->amount;
-            $receiver->save();
-
-            // Create transaction
-            $transaction = Transaction::create([
-                'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
-                'user_id' => $payer->id,
                 'merchant_code' => $qr->merchant_code,
                 'amount' => $qr->amount,
                 'type' => 'payment',
