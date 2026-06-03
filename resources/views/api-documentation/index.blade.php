@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -269,6 +270,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-dark navbar-doc">
@@ -318,8 +320,8 @@
                 <div class="endpoint-card">
                     <p><strong>Base URL:</strong></p>
                     <div class="base-url">
-                        <code>http://127.0.0.1:8001/api/v1</code>
-                        <button class="copy-btn" onclick="copyToClipboard('http://127.0.0.1:8001/api/v1')">Copy</button>
+                        <code id="baseUrlDisplay">{{ $baseUrl }}</code>
+                        <button class="copy-btn" id="copyBaseUrlBtn" onclick="copyToClipboard(document.getElementById('baseUrlDisplay').textContent)">Copy</button>
                     </div>
                     <p><strong>Format Response:</strong> JSON</p>
                     <p><strong>Request Method:</strong> POST (untuk semua endpoint)</p>
@@ -343,7 +345,7 @@
                 <div class="endpoint-card">
                     <h5>Contoh Request Dasar dengan cURL</h5>
                     <div class="code-example">
-<pre>curl -X POST "http://127.0.0.1:8001/api/v1/merchant/check-user" \
+                        <pre>curl -X POST "{{ $baseUrl }}/merchant/check-user" \
   -H "Content-Type: application/json" \
   -d '{
     "phone_number": "08123456789"
@@ -354,7 +356,7 @@
                 <div class="endpoint-card">
                     <h5>Contoh Request dengan JavaScript/Fetch</h5>
                     <div class="code-example">
-<pre>fetch('http://127.0.0.1:8001/api/v1/merchant/check-user', {
+                        <pre>fetch('{{ $baseUrl }}/merchant/check-user', {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json'
@@ -372,9 +374,9 @@
                 <div class="endpoint-card">
                     <h5>Contoh Request dengan Python</h5>
                     <div class="code-example">
-<pre>import requests
+                        <pre>import requests
 
-url = 'http://127.0.0.1:8001/api/v1/merchant/check-user'
+url = '{{ $baseUrl }}/merchant/check-user'
 payload = {
     'phone_number': '08123456789'
 }
@@ -393,7 +395,7 @@ print(response.json())</pre>
                 <div class="endpoint-card">
                     <div>
                         <span class="endpoint-method post">POST</span>
-                        <strong>/merchant/check-user</strong>
+                        <strong>{{ $baseUrl }}/merchant/check-user</strong>
                     </div>
                     <p class="desc-text mt-2">Memeriksa keberadaan pengguna berdasarkan nomor telepon dan mengembalikan informasi dasar pengguna.</p>
 
@@ -419,7 +421,7 @@ print(response.json())</pre>
 
                     <h6 style="margin-top: 20px; color: var(--primary-dark);">Contoh Request</h6>
                     <div class="code-example">
-<pre>curl -X POST "http://127.0.0.1:8001/api/v1/merchant/check-user" \
+                        <pre>curl -X POST "{{ $baseUrl }}/merchant/check-user" \
   -H "Content-Type: application/json" \
   -d '{
     "phone_number": "08123456789"
@@ -455,7 +457,7 @@ print(response.json())</pre>
                 <div class="endpoint-card">
                     <div>
                         <span class="endpoint-method post">POST</span>
-                        <strong>/merchant/check-balance</strong>
+                        <strong>{{ $baseUrl }}/merchant/check-balance</strong>
                     </div>
                     <p class="desc-text mt-2">Memeriksa saldo pengguna berdasarkan nomor telepon.</p>
 
@@ -481,7 +483,7 @@ print(response.json())</pre>
 
                     <h6 style="margin-top: 20px; color: var(--primary-dark);">Contoh Request</h6>
                     <div class="code-example">
-<pre>curl -X POST "http://127.0.0.1:8001/api/v1/merchant/check-balance" \
+                        <pre>curl -X POST "{{ $baseUrl }}/merchant/check-balance" \
   -H "Content-Type: application/json" \
   -d '{
     "phone_number": "08123456789"
@@ -511,7 +513,7 @@ print(response.json())</pre>
                 <div class="endpoint-card">
                     <div>
                         <span class="endpoint-method post">POST</span>
-                        <strong>/payment/topup</strong>
+                        <strong>{{ $baseUrl }}/payment/topup</strong>
                     </div>
                     <p class="desc-text mt-2">Melakukan top-up saldo untuk seorang pengguna.</p>
 
@@ -543,7 +545,7 @@ print(response.json())</pre>
 
                     <h6 style="margin-top: 20px; color: var(--primary-dark);">Contoh Request</h6>
                     <div class="code-example">
-<pre>curl -X POST "http://127.0.0.1:8001/api/v1/payment/topup" \
+                        <pre>curl -X POST "{{ $baseUrl }}/payment/topup" \
   -H "Content-Type: application/json" \
   -d '{
     "phone_number": "08123456789",
@@ -570,7 +572,7 @@ print(response.json())</pre>
                 <div class="endpoint-card">
                     <div>
                         <span class="endpoint-method post">POST</span>
-                        <strong>/payment/qr/generate</strong>
+                        <strong>{{ $baseUrl }}/payment/qr/generate</strong>
                     </div>
                     <p class="desc-text mt-2">Menghasilkan kode QR untuk pembayaran. QR code ini dapat digunakan oleh pengguna lain untuk melakukan pembayaran.</p>
 
@@ -614,7 +616,7 @@ print(response.json())</pre>
 
                     <h6 style="margin-top: 20px; color: var(--primary-dark);">Contoh Request</h6>
                     <div class="code-example">
-<pre>curl -X POST "http://127.0.0.1:8001/api/v1/payment/qr/generate" \
+                        <pre>curl -X POST "{{ $baseUrl }}/payment/qr/generate" \
   -H "Content-Type: application/json" \
   -d '{
     "phone_number": "08123456789",
@@ -644,7 +646,7 @@ print(response.json())</pre>
                 <div class="endpoint-card">
                     <div>
                         <span class="endpoint-method post">POST</span>
-                        <strong>/payment/qr/pay</strong>
+                        <strong>{{ $baseUrl }}/payment/qr/pay</strong>
                     </div>
                     <p class="desc-text mt-2">Melakukan pembayaran menggunakan kode QR yang telah dihasilkan.</p>
 
@@ -676,7 +678,7 @@ print(response.json())</pre>
 
                     <h6 style="margin-top: 20px; color: var(--primary-dark);">Contoh Request</h6>
                     <div class="code-example">
-<pre>curl -X POST "http://127.0.0.1:8001/api/v1/payment/qr/pay" \
+                        <pre>curl -X POST "http://127.0.0.1:8001/api/v1/payment/qr/pay" \
   -H "Content-Type: application/json" \
   -d '{
     "qr_code": "QR-ABCDEF123456",
@@ -764,7 +766,7 @@ print(response.json())</pre>
 
                     <p class="desc-text"><strong>Error 1: QR code tidak ditemukan (404)</strong></p>
                     <div class="code-example" style="background: #f8d7da; color: #721c24;">
-<pre>{
+                        <pre>{
   "success": false,
   "message": "QR code tidak ditemukan"
 }</pre>
@@ -772,7 +774,7 @@ print(response.json())</pre>
 
                     <p class="desc-text" style="margin-top: 15px;"><strong>Error 2: Saldo tidak cukup (402)</strong></p>
                     <div class="code-example" style="background: #f8d7da; color: #721c24;">
-<pre>{
+                        <pre>{
   "success": false,
   "message": "Saldo tidak cukup"
 }</pre>
@@ -781,7 +783,7 @@ print(response.json())</pre>
 
                     <p class="desc-text" style="margin-top: 15px;"><strong>Error 3: QR code sudah digunakan/expired (403)</strong></p>
                     <div class="code-example" style="background: #f8d7da; color: #721c24;">
-<pre>{
+                        <pre>{
   "success": false,
   "message": "QR code tidak aktif atau sudah digunakan"
 }</pre>
@@ -789,7 +791,7 @@ print(response.json())</pre>
 
                     <p class="desc-text" style="margin-top: 15px;"><strong>Error 4: User tidak aktif (403)</strong></p>
                     <div class="code-example" style="background: #f8d7da; color: #721c24;">
-<pre>{
+                        <pre>{
   "success": false,
   "message": "User tidak aktif"
 }</pre>
@@ -849,7 +851,7 @@ print(response.json())</pre>
                     <h5>Struktur Response Error</h5>
                     <p class="desc-text">Semua response error mengikuti format yang konsisten:</p>
                     <div class="code-example">
-<pre>{
+                        <pre>{
   "success": false,
   "message": "Deskripsi error",
   "data": null
@@ -869,10 +871,28 @@ print(response.json())</pre>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
     <script>
+        // Set dynamic base URL from server
+        const API_BASE_URL = '{{ $baseUrl }}';
+
+        // Replace all hardcoded URLs with dynamic base URL
+        function replaceUrls() {
+            document.querySelectorAll('pre, code, .base-url').forEach(el => {
+                let html = el.innerHTML;
+                // Replace hardcoded localhost URL with dynamic base URL
+                html = html.replace(/http:\/\/127\.0\.0\.1:8001\/api\/v1/g, API_BASE_URL);
+                html = html.replace(/http:\/\/localhost:8001\/api\/v1/g, API_BASE_URL);
+                html = html.replace(/http:\/\/localhost\/api\/v1/g, API_BASE_URL);
+                el.innerHTML = html;
+            });
+        }
+
         // Highlight code blocks
         document.querySelectorAll('pre').forEach(el => {
             hljs.highlightElement(el);
         });
+
+        // Replace URLs after DOM ready
+        document.addEventListener('DOMContentLoaded', replaceUrls);
 
         // Navigation
         document.querySelectorAll('.sidebar-nav .nav-link').forEach(link => {
@@ -890,7 +910,9 @@ print(response.json())</pre>
 
                 const element = document.getElementById(targetId);
                 if (element) {
-                    element.scrollIntoView({ behavior: 'smooth' });
+                    element.scrollIntoView({
+                        behavior: 'smooth'
+                    });
                 }
             });
         });
@@ -905,4 +927,5 @@ print(response.json())</pre>
         }
     </script>
 </body>
+
 </html>
