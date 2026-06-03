@@ -295,6 +295,9 @@
                 <a class="nav-link" href="#payment-api" data-section="payment-api">
                     <i class="bi bi-credit-card"></i> Payment API
                 </a>
+                <a class="nav-link" href="#payment-flow" data-section="payment-flow">
+                    <i class="bi bi-diagram-2"></i> Payment Flow
+                </a>
                 <a class="nav-link" href="#response-codes" data-section="response-codes">
                     <i class="bi bi-list-ul"></i> Response Codes
                 </a>
@@ -695,6 +698,100 @@ print(response.json())</pre>
     "receiver_new_balance": 5050000,
     "status": "success"
   }
+}</pre>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Payment Flow Section -->
+            <section id="payment-flow">
+                <h3 class="section-header"><i class="bi bi-diagram-2"></i> Complete Payment Flow (Alur Pembayaran Lengkap)</h3>
+
+                <div class="endpoint-card">
+                    <h5>⭐ Alur Pembayaran Peer-to-Peer dengan QR Code</h5>
+                    <p class="desc-text">Berikut adalah alur lengkap transaksi pembayaran menggunakan OnoPay API:</p>
+
+                    <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin: 20px 0; line-height: 2;">
+                        <p><strong style="color: var(--primary-blue);">Langkah 1:</strong> Penerima uang (Seller/Merchant) membuat permintaan pembayaran</p>
+                        <p style="margin-left: 40px; color: #666;"><code>POST /payment/qr/generate</code></p>
+                        <p style="margin-left: 40px; color: #666;">Input: phone_number, amount, description</p>
+                        <p style="margin-left: 40px; font-size: 0.9rem; color: #999;">↓ Sistem menghasilkan unique QR code ↓</p>
+
+                        <p><strong style="color: var(--primary-blue);">Langkah 2:</strong> QR code dikomunikasikan ke pembayar</p>
+                        <p style="margin-left: 40px; color: #666;">Via: WhatsApp, Email, SMS, atau media komunikasi lainnya</p>
+                        <p style="margin-left: 40px; color: #666;">QR code berlaku selama 30 menit</p>
+                        <p style="margin-left: 40px; font-size: 0.9rem; color: #999;">↓ Pembayar menerima dan menginput QR code ↓</p>
+
+                        <p><strong style="color: var(--primary-blue);">Langkah 3:</strong> Pembayar memproses pembayaran</p>
+                        <p style="margin-left: 40px; color: #666;"><code>POST /payment/qr/pay</code></p>
+                        <p style="margin-left: 40px; color: #666;">Input: qr_code, payer_phone</p>
+                        <p style="margin-left: 40px; font-size: 0.9rem; color: #999;">↓ Sistem validasi ↓</p>
+
+                        <div style="background: white; padding: 15px; border-left: 4px solid var(--primary-blue); margin: 20px 0;">
+                            <p style="margin: 0;"><strong>Validasi yang dilakukan sistem:</strong></p>
+                            <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                                <li>QR code ada di database</li>
+                                <li>QR code status = "active" (belum digunakan)</li>
+                                <li>QR code belum expired</li>
+                                <li>Payer (pembayar) active status</li>
+                                <li>Payer memiliki saldo >= jumlah pembayaran</li>
+                            </ul>
+                        </div>
+
+                        <p><strong style="color: #28a745;">Langkah 4:</strong> Transaksi Berhasil (✓) ⭐</p>
+                        <p style="margin-left: 40px; background: #d1e7dd; padding: 10px; border-radius: 4px;">
+                            ✓ Kurangi saldo payer<br>
+                            ✓ Tambah saldo receiver<br>
+                            ✓ Buat transaction record dengan status "success"<br>
+                            ✓ Tandai QR code sebagai "used"
+                        </p>
+                    </div>
+
+                    <div style="background: #e7f3ff; border-left: 4px solid var(--info); padding: 15px; border-radius: 4px; margin: 20px 0;">
+                        <p style="margin: 0;"><strong style="color: #0066cc;">💡 Keunggulan API OnoPay:</strong></p>
+                        <ul style="margin: 10px 0 0 0; padding-left: 20px;">
+                            <li>Tidak memerlukan autentikasi API Key - akses terbuka untuk semua pihak</li>
+                            <li>Atomicity terjamin - jika salah satu step gagal, seluruh transaksi dibatalkan</li>
+                            <li>Real-time processing - uang langsung transfer antar akun</li>
+                            <li>Keamanan tingkat enterprise - semua data terenkripsi dan tervalidasi</li>
+                            <li>Error handling lengkap - setiap kemungkinan error sudah ditangani</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="endpoint-card">
+                    <h5>Skenario Error & Penanganan</h5>
+
+                    <p class="desc-text"><strong>Error 1: QR code tidak ditemukan (404)</strong></p>
+                    <div class="code-example" style="background: #f8d7da; color: #721c24;">
+<pre>{
+  "success": false,
+  "message": "QR code tidak ditemukan"
+}</pre>
+                    </div>
+
+                    <p class="desc-text" style="margin-top: 15px;"><strong>Error 2: Saldo tidak cukup (402)</strong></p>
+                    <div class="code-example" style="background: #f8d7da; color: #721c24;">
+<pre>{
+  "success": false,
+  "message": "Saldo tidak cukup"
+}</pre>
+                    </div>
+                    <p class="desc-text">Kategori status: 402 Payment Required sesuai standar HTTP</p>
+
+                    <p class="desc-text" style="margin-top: 15px;"><strong>Error 3: QR code sudah digunakan/expired (403)</strong></p>
+                    <div class="code-example" style="background: #f8d7da; color: #721c24;">
+<pre>{
+  "success": false,
+  "message": "QR code tidak aktif atau sudah digunakan"
+}</pre>
+                    </div>
+
+                    <p class="desc-text" style="margin-top: 15px;"><strong>Error 4: User tidak aktif (403)</strong></p>
+                    <div class="code-example" style="background: #f8d7da; color: #721c24;">
+<pre>{
+  "success": false,
+  "message": "User tidak aktif"
 }</pre>
                     </div>
                 </div>

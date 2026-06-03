@@ -8,6 +8,10 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ApiDocumentationController;
 use App\Http\Controllers\UserAuthController;
 use App\Http\Controllers\UserDashboardController;
+use App\Http\Controllers\LandingController;
+
+// Landing Page
+Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
@@ -21,10 +25,6 @@ Route::middleware(['web', 'admin'])->group(function () {
     Route::resource('transaction', TransactionController::class)->only(['index', 'show', 'edit', 'update']);
 });
 
-Route::get('/', function () {
-    return redirect()->route('dashboard');
-});
-
 // API Documentation (Public)
 Route::get('/api-docs', [ApiDocumentationController::class, 'index'])->name('api-docs');
 
@@ -34,8 +34,8 @@ Route::post('/user/login', [UserAuthController::class, 'login'])->name('user.log
 Route::get('/user/register', [UserAuthController::class, 'showRegister'])->name('user.register');
 Route::post('/user/register', [UserAuthController::class, 'register'])->name('user.register.store');
 
-// User Routes (Protected)
-Route::middleware(['web'])->group(function () {
+// User Routes (Protected with user.auth middleware)
+Route::middleware(['web', 'user.auth'])->group(function () {
     Route::post('/user/logout', [UserAuthController::class, 'logout'])->name('user.logout');
 
     Route::get('/app/dashboard', [UserDashboardController::class, 'dashboard'])->name('user.dashboard');
