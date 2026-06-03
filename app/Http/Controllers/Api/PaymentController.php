@@ -117,6 +117,7 @@ class PaymentController extends Controller
                 'amount' => 'required|numeric|min:100',
                 'merchant_code' => 'nullable|string',
                 'description' => 'nullable|string',
+                'qr_mode' => 'nullable|in:single_use,reusable',
             ], [
                 'phone_number.required' => 'Phone number is required',
                 'amount.required' => 'Amount is required',
@@ -147,6 +148,8 @@ class PaymentController extends Controller
             ], 403);
         }
 
+        $qrMode = $validated['qr_mode'] ?? 'single_use';
+
         // Generate QR data
         $qrCode = Str::upper('QR-' . Str::random(12));
         $qrData = json_encode([
@@ -155,8 +158,11 @@ class PaymentController extends Controller
             'phone_number' => $user->phone_number,
             'amount' => (float)$validated['amount'],
             'merchant_code' => $validated['merchant_code'] ?? null,
+            'qr_mode' => $qrMode,
             'timestamp' => now()->toIso8601String(),
         ]);
+
+        $expiresAt = $qrMode === 'reusable' ? null : now()->addMinutes(15);
 
         // Create QR record
         $qr = QRCode::create([
@@ -165,9 +171,10 @@ class PaymentController extends Controller
             'user_id' => $user->id,
             'amount' => $validated['amount'],
             'description' => $validated['description'] ?? 'Payment via QR Code',
+            'qr_mode' => $qrMode,
             'qr_data' => $qrData,
             'status' => 'active',
-            'expires_at' => now()->addMinutes(15),
+            'expires_at' => $expiresAt,
         ]);
 
         return response()->json([
@@ -177,7 +184,8 @@ class PaymentController extends Controller
                 'qr_code' => $qrCode,
                 'amount' => (float)$validated['amount'],
                 'merchant_code' => $validated['merchant_code'] ?? null,
-                'expires_at' => $qr->expires_at->toIso8601String(),
+                'qr_mode' => $qrMode,
+                'expires_at' => $qr->expires_at ? $qr->expires_at->toIso8601String() : null,
                 'description' => $qr->description,
             ],
         ]);
@@ -220,7 +228,7 @@ class PaymentController extends Controller
             ], 403);
         }
 
-        if ($qr->expires_at < now()) {
+        if ($qr->expires_at && $qr->expires_at < now()) {
             $qr->update(['status' => 'expired']);
             return response()->json([
                 'success' => false,
@@ -275,8 +283,10 @@ class PaymentController extends Controller
                 'completed_at' => now(),
             ]);
 
-            // Mark QR as used
-            $qr->update(['status' => 'used']);
+            // Single-use QR becomes used after one successful payment.
+            if ($qr->qr_mode === 'single_use') {
+                $qr->update(['status' => 'used']);
+            }
 
             return response()->json([
                 'success' => true,

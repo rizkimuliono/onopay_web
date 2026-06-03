@@ -14,6 +14,7 @@ class QRCode extends Model
         'user_id',
         'amount',
         'description',
+        'qr_mode',
         'qr_data',
         'status',
         'expires_at',

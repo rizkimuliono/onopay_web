@@ -329,7 +329,7 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Berlaku Sampai</span>
-                        <span class="detail-value">{{ $qr->expires_at->format('H:i') }}</span>
+                        <span class="detail-value">{{ $qr->expires_at ? $qr->expires_at->format('H:i') : 'Tanpa Batas (Berulang)' }}</span>
                     </div>
                 </div>
 

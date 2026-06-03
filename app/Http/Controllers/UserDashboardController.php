@@ -67,6 +67,7 @@ class UserDashboardController extends Controller
         $validated = $request->validate([
             'amount' => 'required|numeric|min:100',
             'description' => 'nullable|string|max:255',
+            'qr_mode' => 'required|in:single_use,reusable',
         ]);
 
         $user = User::find(session('user_id'));
@@ -78,17 +79,21 @@ class UserDashboardController extends Controller
                 'user_id' => $user->id,
                 'phone_number' => $user->phone_number,
                 'amount' => (float)$validated['amount'],
+                'qr_mode' => $validated['qr_mode'],
                 'timestamp' => now()->toIso8601String(),
             ]);
+
+            $expiresAt = $validated['qr_mode'] === 'reusable' ? null : now()->addMinutes(30);
 
             $qr = QRCode::create([
                 'code' => $qrCode,
                 'user_id' => $user->id,
                 'amount' => $validated['amount'],
                 'description' => $validated['description'] ?? 'OnoPay Payment',
+                'qr_mode' => $validated['qr_mode'],
                 'qr_data' => $qrData,
                 'status' => 'active',
-                'expires_at' => now()->addMinutes(30),
+                'expires_at' => $expiresAt,
             ]);
 
             return redirect()->route('user.payment-show', $qrCode)->with('success', 'QR Code berhasil dibuat');
@@ -118,7 +123,7 @@ class UserDashboardController extends Controller
             return redirect()->route('user.dashboard')->withErrors(['error' => 'QR Code tidak aktif atau sudah digunakan']);
         }
 
-        if ($qr->expires_at < now()) {
+        if ($qr->expires_at && $qr->expires_at < now()) {
             $qr->update(['status' => 'expired']);
             return redirect()->route('user.dashboard')->withErrors(['error' => 'QR Code sudah kadaluarsa']);
         }
@@ -150,7 +155,7 @@ class UserDashboardController extends Controller
             ], 403);
         }
 
-        if ($qr->expires_at < now()) {
+        if ($qr->expires_at && $qr->expires_at < now()) {
             $qr->update(['status' => 'expired']);
             return response()->json([
                 'success' => false,
@@ -187,8 +192,10 @@ class UserDashboardController extends Controller
                 'completed_at' => now(),
             ]);
 
-            // Mark QR as used
-            $qr->update(['status' => 'used']);
+            // Single-use QR becomes used after one successful payment.
+            if ($qr->qr_mode === 'single_use') {
+                $qr->update(['status' => 'used']);
+            }
 
             return response()->json([
                 'success' => true,

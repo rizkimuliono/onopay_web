@@ -197,7 +197,7 @@
                 <div class="form-group">
                     <label class="form-label">Nominal (Rp)</label>
                     <input type="number" class="form-control amount-input @error('amount') is-invalid @enderror"
-                           name="amount" placeholder="0" min="100" step="1000"
+                           name="amount" placeholder="0" min="100" step="100"
                            value="{{ old('amount') }}" required autocomplete="off">
                     @error('amount')
                         <small class="text-danger mt-1">{{ $message }}</small>
@@ -214,6 +214,22 @@
                     @enderror
                 </div>
 
+                <div class="form-group">
+                    <label class="form-label">Tipe QR</label>
+                    <select class="form-control @error('qr_mode') is-invalid @enderror" name="qr_mode" required>
+                        <option value="single_use" {{ old('qr_mode', 'single_use') === 'single_use' ? 'selected' : '' }}>
+                            Sekali Pakai (otomatis tertutup setelah dibayar)
+                        </option>
+                        <option value="reusable" {{ old('qr_mode') === 'reusable' ? 'selected' : '' }}>
+                            Berulang Kali (tetap aktif untuk pembayaran berikutnya)
+                        </option>
+                    </select>
+                    <small class="text-muted">Gunakan mode berulang untuk kasir/transportasi/public payment point.</small>
+                    @error('qr_mode')
+                        <small class="text-danger mt-1">{{ $message }}</small>
+                    @enderror
+                </div>
+
                 <button type="submit" class="btn btn-submit">
                     <i class="bi bi-qr-code"></i> Buat QR Code
                 </button>
@@ -222,7 +238,7 @@
             <hr>
 
             <div style="font-size: 0.85rem; color: #999; text-align: center;">
-                <i class="bi bi-shield-check"></i> QR Code berlaku 30 menit
+                <i class="bi bi-shield-check"></i> Sekali pakai: berlaku 30 menit • Berulang: aktif terus sampai dinonaktifkan
             </div>
         </div>
     </div>

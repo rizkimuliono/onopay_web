@@ -207,7 +207,11 @@
 
         <!-- Expiry Info -->
         <div class="expiry-badge">
-            <i class="bi bi-clock"></i> Berlaku hingga {{ $qr->expires_at->format('H:i') }}
+            @if ($qr->qr_mode === 'reusable')
+                <i class="bi bi-arrow-repeat"></i> Mode: Berulang Kali (selalu aktif)
+            @else
+                <i class="bi bi-clock"></i> Berlaku hingga {{ $qr->expires_at->format('H:i') }}
+            @endif
         </div>
 
         <!-- Info Box -->
@@ -247,9 +251,11 @@
         </div>
 
         <!-- Timer -->
-        <div class="timer" id="timer">
-            Sisa waktu: <span id="countdown"></span>
-        </div>
+        @if ($qr->qr_mode === 'single_use')
+            <div class="timer" id="timer">
+                Sisa waktu: <span id="countdown"></span>
+            </div>
+        @endif
     </div>
 
     <script>
@@ -263,6 +269,7 @@
             correctLevel: QRCode.CorrectLevel.H
         });
 
+        @if ($qr->qr_mode === 'single_use')
         // Countdown Timer
         function updateCountdown() {
             const expiryTime = new Date('{{ $qr->expires_at }}').getTime();
@@ -284,6 +291,7 @@
 
         updateCountdown();
         setInterval(updateCountdown, 1000);
+        @endif
 
         // Download QR Code
         function downloadQR() {
