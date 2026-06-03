@@ -252,6 +252,21 @@
                 <a class="nav-link {{ request()->routeIs('transaction.*') ? 'active' : '' }}" href="{{ route('transaction.index') }}">
                     <i class="bi bi-arrow-left-right"></i> Transaksi
                 </a>
+
+                <!-- Topup Management Section -->
+                <hr style="margin: 15px 0; border-color: rgba(255, 255, 255, 0.1);">
+                <div style="padding: 0 20px; font-size: 0.75rem; text-transform: uppercase; color: rgba(255, 255, 255, 0.6); margin-bottom: 8px; font-weight: 600;">Manajemen Topup</div>
+                <a class="nav-link {{ request()->routeIs('admin.topup-pending') ? 'active' : '' }}" href="{{ route('admin.topup-pending') }}">
+                    <i class="bi bi-clock-history"></i> Pending Topups
+                </a>
+                <a class="nav-link {{ request()->routeIs('admin.balance-verification') ? 'active' : '' }}" href="{{ route('admin.balance-verification') }}">
+                    <i class="bi bi-wallet2"></i> Verifikasi Saldo
+                </a>
+                <a class="nav-link {{ request()->routeIs('admin.topup-settings') ? 'active' : '' }}" href="{{ route('admin.topup-settings') }}">
+                    <i class="bi bi-gear"></i> Topup Settings
+                </a>
+                <hr style="margin: 15px 0; border-color: rgba(255, 255, 255, 0.1);">
+
                 <a class="nav-link {{ request()->routeIs('api-docs') ? 'active' : '' }}" href="{{ route('api-docs') }}" target="_blank">
                     <i class="bi bi-book"></i> API Documentation
                 </a>

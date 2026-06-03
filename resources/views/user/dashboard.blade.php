@@ -261,6 +261,10 @@
                     <i class="bi bi-download"></i>
                     <span>Bayar QR</span>
                 </a>
+                <a href="{{ route('user.topup') }}" class="action-btn">
+                    <i class="bi bi-plus-circle"></i>
+                    <span>Top Up</span>
+                </a>
                 <a href="{{ route('user.wallet') }}" class="action-btn">
                     <i class="bi bi-piggy-bank"></i>
                     <span>Wallet</span>
@@ -370,7 +374,7 @@
             e.preventDefault();
             const qrCode = prompt('Masukkan QR Code atau nomor referensi:');
             if (qrCode) {
-                window.location.href = '{{ route("user.payment-confirm", "") }}' + qrCode;
+                window.location.href = '/app/payment/confirm/' + qrCode;
             }
         }
     </script>

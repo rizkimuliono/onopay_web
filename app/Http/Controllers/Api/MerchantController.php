@@ -4,18 +4,31 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\User;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiValidation;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
 
 class MerchantController extends Controller
 {
+    use ApiValidation;
     /**
      * Check user by phone number
      */
     public function checkUser(Request $request)
     {
-        $validated = $request->validate([
-            'phone_number' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'phone_number' => 'required|string',
+            ], [
+                'phone_number.required' => 'Phone number is required',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $user = User::where('phone_number', $validated['phone_number'])->first();
 
@@ -45,9 +58,19 @@ class MerchantController extends Controller
      */
     public function checkBalance(Request $request)
     {
-        $validated = $request->validate([
-            'phone_number' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'phone_number' => 'required|string',
+            ], [
+                'phone_number.required' => 'Phone number is required',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $user = User::where('phone_number', $validated['phone_number'])->first();
 

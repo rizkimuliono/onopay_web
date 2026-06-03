@@ -42,6 +42,12 @@
             margin-right: 8px;
         }
 
+        .navbar-nav {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
         .navbar-nav .nav-link {
             color: rgba(255, 255, 255, 0.8) !important;
             margin-left: 15px;

@@ -335,7 +335,7 @@
             }
 
             // Redirect to payment confirmation page
-            window.location.href = `{{ route('user.payment-confirm', '') }}/${qrCode}`;
+            window.location.href = `/app/payment/confirm/${qrCode}`;
         }
 
         function resetForm() {

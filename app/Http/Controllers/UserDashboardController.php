@@ -5,25 +5,17 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\QRCode;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class UserDashboardController extends Controller
 {
-    // Middleware untuk check user login
-    public function __construct()
-    {
-        $this->middleware('user.auth');
-    }
-
     // Dashboard
     public function dashboard()
     {
         $user = User::find(session('user_id'));
-        $recentTransactions = Transaction::where('user_id', $user->id)
-            ->orWhere('id', '=', function($query) {
-                $query->select('id')->from('transactions')->where('user_id', session('user_id'));
-            })
+        $recentTransactions = $user->transactions()
             ->latest()
             ->take(5)
             ->get();
@@ -183,10 +175,11 @@ class UserDashboardController extends Controller
             $receiver->balance += $qr->amount;
             $receiver->save();
 
-            // Create transaction
+            // Create transaction linked to QR code
             $transaction = Transaction::create([
                 'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
                 'user_id' => $payer->id,
+                'qr_code_id' => $qr->id,
                 'amount' => $qr->amount,
                 'type' => 'payment',
                 'status' => 'success',
@@ -230,5 +223,64 @@ class UserDashboardController extends Controller
     {
         $user = User::find(session('user_id'));
         return view('user.profile', ['user' => $user]);
+    }
+
+    // Show topup form
+    public function showTopup()
+    {
+        $user = User::find(session('user_id'));
+        return view('user.topup', ['user' => $user]);
+    }
+
+    // Process topup
+    public function processTopup(Request $request)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:1000|max:50000000',
+        ], [
+            'amount.required' => 'Jumlah top up harus diisi',
+            'amount.numeric' => 'Jumlah top up harus berupa angka',
+            'amount.min' => 'Minimum top up adalah Rp 1.000',
+            'amount.max' => 'Maksimum top up adalah Rp 50.000.000',
+        ]);
+
+        try {
+            $user = User::find(session('user_id'));
+            $amount = (float)$validated['amount'];
+            $verificationEnabled = SystemSetting::getValue('topup_verification_enabled', '0') === '1';
+
+            if ($verificationEnabled) {
+                // Create transaction with pending status - needs admin verification
+                $transaction = Transaction::create([
+                    'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
+                    'user_id' => $user->id,
+                    'amount' => $amount,
+                    'type' => 'topup',
+                    'status' => 'pending',
+                    'description' => 'Top Up Saldo (Menunggu Verifikasi)',
+                    'completed_at' => null,
+                ]);
+
+                return redirect()->route('user.topup')->with('success', 'Top up Anda sedang menunggu verifikasi admin. Saldo akan bertambah setelah disetujui.');
+            } else {
+                // Auto-approve: update balance and create successful transaction
+                $user->balance += $amount;
+                $user->save();
+
+                $transaction = Transaction::create([
+                    'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
+                    'user_id' => $user->id,
+                    'amount' => $amount,
+                    'type' => 'topup',
+                    'status' => 'success',
+                    'description' => 'Top Up Saldo',
+                    'completed_at' => now(),
+                ]);
+
+                return redirect()->route('user.topup')->with('success', 'Top up berhasil! Saldo Anda bertambah Rp ' . number_format($amount, 0));
+            }
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Top up gagal: ' . $e->getMessage()]);
+        }
     }
 }

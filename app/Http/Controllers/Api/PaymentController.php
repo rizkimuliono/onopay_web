@@ -5,21 +5,38 @@ namespace App\Http\Controllers\Api;
 use App\Models\User;
 use App\Models\Transaction;
 use App\Models\QRCode;
+use App\Models\SystemSetting;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\ApiValidation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class PaymentController extends Controller
 {
+    use ApiValidation;
     /**
      * Topup user balance
      */
     public function topup(Request $request)
     {
-        $validated = $request->validate([
-            'phone_number' => 'required|string',
-            'amount' => 'required|numeric|min:1000',
-        ]);
+        try {
+            $validated = $request->validate([
+                'phone_number' => 'required|string',
+                'amount' => 'required|numeric|min:1000',
+            ], [
+                'phone_number.required' => 'Phone number is required',
+                'amount.required' => 'Amount is required',
+                'amount.numeric' => 'Amount must be a number',
+                'amount.min' => 'Minimum amount is 1000',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $user = User::where('phone_number', $validated['phone_number'])->first();
 
@@ -37,35 +54,56 @@ class PaymentController extends Controller
             ], 403);
         }
 
-        // Create transaction
-        $transaction = Transaction::create([
-            'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
-            'user_id' => $user->id,
-            'amount' => $validated['amount'],
-            'type' => 'topup',
-            'status' => 'pending',
-            'description' => 'Topup saldo',
-        ]);
+        // Check if topup verification is enabled
+        $verificationEnabled = SystemSetting::getValue('topup_verification_enabled', '0') === '1';
 
-        // For now, auto-approve topup (in production, integrate with payment gateway)
-        $user->balance += $validated['amount'];
-        $user->save();
+        if ($verificationEnabled) {
+            // Create transaction with pending status
+            $transaction = Transaction::create([
+                'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
+                'user_id' => $user->id,
+                'amount' => $validated['amount'],
+                'type' => 'topup',
+                'status' => 'pending',
+                'description' => 'Topup saldo (Menunggu Verifikasi)',
+            ]);
 
-        $transaction->update([
-            'status' => 'success',
-            'completed_at' => now(),
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Topup berhasil',
-            'data' => [
-                'transaction_id' => $transaction->transaction_id,
-                'amount' => (float)$validated['amount'],
-                'new_balance' => (float)$user->balance,
+            return response()->json([
+                'success' => true,
+                'message' => 'Topup submitted for verification',
+                'data' => [
+                    'transaction_id' => $transaction->transaction_id,
+                    'amount' => (float)$validated['amount'],
+                    'status' => 'pending',
+                    'message' => 'Waiting for admin approval',
+                ],
+            ], 202); // 202 Accepted
+        } else {
+            // Auto-approve topup
+            $transaction = Transaction::create([
+                'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
+                'user_id' => $user->id,
+                'amount' => $validated['amount'],
+                'type' => 'topup',
                 'status' => 'success',
-            ],
-        ]);
+                'description' => 'Topup saldo',
+                'completed_at' => now(),
+            ]);
+
+            $user->balance += $validated['amount'];
+            $user->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Topup berhasil',
+                'data' => [
+                    'transaction_id' => $transaction->transaction_id,
+                    'amount' => (float)$validated['amount'],
+                    'new_balance' => (float)$user->balance,
+                    'status' => 'success',
+                ],
+            ]);
+        }
     }
 
     /**
@@ -73,12 +111,25 @@ class PaymentController extends Controller
      */
     public function generateQR(Request $request)
     {
-        $validated = $request->validate([
-            'phone_number' => 'required|string',
-            'amount' => 'required|numeric|min:100',
-            'merchant_code' => 'nullable|string',
-            'description' => 'nullable|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'phone_number' => 'required|string',
+                'amount' => 'required|numeric|min:100',
+                'merchant_code' => 'nullable|string',
+                'description' => 'nullable|string',
+            ], [
+                'phone_number.required' => 'Phone number is required',
+                'amount.required' => 'Amount is required',
+                'amount.numeric' => 'Amount must be a number',
+                'amount.min' => 'Minimum amount is 100',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $user = User::where('phone_number', $validated['phone_number'])->first();
 
@@ -137,10 +188,21 @@ class PaymentController extends Controller
      */
     public function paymentQR(Request $request)
     {
-        $validated = $request->validate([
-            'qr_code' => 'required|string',
-            'payer_phone' => 'required|string',
-        ]);
+        try {
+            $validated = $request->validate([
+                'qr_code' => 'required|string',
+                'payer_phone' => 'required|string',
+            ], [
+                'qr_code.required' => 'QR code is required',
+                'payer_phone.required' => 'Payer phone number is required',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation failed',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $qr = QRCode::where('code', $validated['qr_code'])->first();
 
