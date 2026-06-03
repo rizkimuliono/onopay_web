@@ -12,6 +12,7 @@ class User extends Model
         'phone_number',
         'name',
         'email',
+        'password',
         'balance',
         'status',
         'pin',

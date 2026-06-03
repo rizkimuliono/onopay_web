@@ -1,0 +1,234 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\User;
+use App\Models\Transaction;
+use App\Models\QRCode;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+
+class UserDashboardController extends Controller
+{
+    // Middleware untuk check user login
+    public function __construct()
+    {
+        $this->middleware('user.auth');
+    }
+
+    // Dashboard
+    public function dashboard()
+    {
+        $user = User::find(session('user_id'));
+        $recentTransactions = Transaction::where('user_id', $user->id)
+            ->orWhere('id', '=', function($query) {
+                $query->select('id')->from('transactions')->where('user_id', session('user_id'));
+            })
+            ->latest()
+            ->take(5)
+            ->get();
+
+        return view('user.dashboard', [
+            'user' => $user,
+            'recentTransactions' => $recentTransactions,
+        ]);
+    }
+
+    // Wallet
+    public function wallet()
+    {
+        $user = User::find(session('user_id'));
+        return view('user.wallet', ['user' => $user]);
+    }
+
+    // Transactions
+    public function transactions()
+    {
+        $user = User::find(session('user_id'));
+        $transactions = Transaction::where('user_id', $user->id)
+            ->latest()
+            ->paginate(15);
+
+        return view('user.transactions', [
+            'user' => $user,
+            'transactions' => $transactions,
+        ]);
+    }
+
+    // Show payment input (untuk pembayar menginput QR code)
+    public function showPaymentInput()
+    {
+        $user = User::find(session('user_id'));
+        return view('user.payment-input', ['user' => $user]);
+    }
+
+    // Show payment create (generate QR)
+    public function showPaymentCreate()
+    {
+        $user = User::find(session('user_id'));
+        return view('user.payment-create', ['user' => $user]);
+    }
+
+    // Create QR Code
+    public function createQRCode(Request $request)
+    {
+        $validated = $request->validate([
+            'amount' => 'required|numeric|min:100',
+            'description' => 'nullable|string|max:255',
+        ]);
+
+        $user = User::find(session('user_id'));
+
+        try {
+            $qrCode = Str::upper('QR-' . Str::random(12));
+            $qrData = json_encode([
+                'code' => $qrCode,
+                'user_id' => $user->id,
+                'phone_number' => $user->phone_number,
+                'amount' => (float)$validated['amount'],
+                'timestamp' => now()->toIso8601String(),
+            ]);
+
+            $qr = QRCode::create([
+                'code' => $qrCode,
+                'user_id' => $user->id,
+                'amount' => $validated['amount'],
+                'description' => $validated['description'] ?? 'OnoPay Payment',
+                'qr_data' => $qrData,
+                'status' => 'active',
+                'expires_at' => now()->addMinutes(30),
+            ]);
+
+            return redirect()->route('user.payment-show', $qrCode)->with('success', 'QR Code berhasil dibuat');
+        } catch (\Exception $e) {
+            return back()->withErrors(['error' => 'Gagal membuat QR Code: ' . $e->getMessage()]);
+        }
+    }
+
+    // Show QR Code detail
+    public function showQRCode($qrCode)
+    {
+        $qr = QRCode::where('code', $qrCode)->firstOrFail();
+
+        if ($qr->user_id !== session('user_id')) {
+            abort(403, 'Unauthorized');
+        }
+
+        return view('user.payment-show', ['qr' => $qr]);
+    }
+
+    // Show payment confirmation (untuk pembayar)
+    public function showPaymentConfirm($qrCode)
+    {
+        $qr = QRCode::where('code', $qrCode)->firstOrFail();
+
+        if ($qr->status !== 'active') {
+            return redirect()->route('user.dashboard')->withErrors(['error' => 'QR Code tidak aktif atau sudah digunakan']);
+        }
+
+        if ($qr->expires_at < now()) {
+            $qr->update(['status' => 'expired']);
+            return redirect()->route('user.dashboard')->withErrors(['error' => 'QR Code sudah kadaluarsa']);
+        }
+
+        $payer = User::find(session('user_id'));
+        $receiver = $qr->user;
+
+        return view('user.payment-confirm', [
+            'qr' => $qr,
+            'payer' => $payer,
+            'receiver' => $receiver,
+        ]);
+    }
+
+    // Process payment
+    public function processPayment(Request $request)
+    {
+        $validated = $request->validate([
+            'qr_code' => 'required|string',
+        ]);
+
+        $qr = QRCode::where('code', $validated['qr_code'])->firstOrFail();
+        $payer = User::find(session('user_id'));
+
+        if ($qr->status !== 'active') {
+            return response()->json([
+                'success' => false,
+                'message' => 'QR code tidak aktif',
+            ], 403);
+        }
+
+        if ($qr->expires_at < now()) {
+            $qr->update(['status' => 'expired']);
+            return response()->json([
+                'success' => false,
+                'message' => 'QR code sudah kadaluarsa',
+            ], 403);
+        }
+
+        if ($payer->balance < $qr->amount) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Saldo tidak cukup',
+            ], 402);
+        }
+
+        try {
+            // Deduct from payer
+            $payer->balance -= $qr->amount;
+            $payer->save();
+
+            // Add to receiver
+            $receiver = $qr->user;
+            $receiver->balance += $qr->amount;
+            $receiver->save();
+
+            // Create transaction
+            $transaction = Transaction::create([
+                'transaction_id' => 'TXN-' . time() . '-' . Str::random(6),
+                'user_id' => $payer->id,
+                'amount' => $qr->amount,
+                'type' => 'payment',
+                'status' => 'success',
+                'description' => $qr->description,
+                'completed_at' => now(),
+            ]);
+
+            // Mark QR as used
+            $qr->update(['status' => 'used']);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Pembayaran berhasil',
+                'data' => [
+                    'transaction_id' => $transaction->transaction_id,
+                    'amount' => (float)$qr->amount,
+                    'receiver' => $receiver->name,
+                    'new_balance' => (float)$payer->balance,
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Pembayaran gagal: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    // Show transaction detail
+    public function showTransactionDetail($transactionId)
+    {
+        $transaction = Transaction::where('transaction_id', $transactionId)
+            ->where('user_id', session('user_id'))
+            ->firstOrFail();
+
+        return view('user.transaction-detail', ['transaction' => $transaction]);
+    }
+
+    // Show profile
+    public function profile()
+    {
+        $user = User::find(session('user_id'));
+        return view('user.profile', ['user' => $user]);
+    }
+}

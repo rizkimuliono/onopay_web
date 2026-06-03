@@ -6,6 +6,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\ApiDocumentationController;
+use App\Http\Controllers\UserAuthController;
+use App\Http\Controllers\UserDashboardController;
 
 // Auth Routes
 Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
@@ -25,4 +27,29 @@ Route::get('/', function () {
 
 // API Documentation (Public)
 Route::get('/api-docs', [ApiDocumentationController::class, 'index'])->name('api-docs');
+
+// User Routes (Public)
+Route::get('/user/login', [UserAuthController::class, 'showLogin'])->name('user.login');
+Route::post('/user/login', [UserAuthController::class, 'login'])->name('user.login.store');
+Route::get('/user/register', [UserAuthController::class, 'showRegister'])->name('user.register');
+Route::post('/user/register', [UserAuthController::class, 'register'])->name('user.register.store');
+
+// User Routes (Protected)
+Route::middleware(['web'])->group(function () {
+    Route::post('/user/logout', [UserAuthController::class, 'logout'])->name('user.logout');
+
+    Route::get('/app/dashboard', [UserDashboardController::class, 'dashboard'])->name('user.dashboard');
+    Route::get('/app/wallet', [UserDashboardController::class, 'wallet'])->name('user.wallet');
+    Route::get('/app/transactions', [UserDashboardController::class, 'transactions'])->name('user.transactions');
+    Route::get('/app/transactions/{transactionId}', [UserDashboardController::class, 'showTransactionDetail'])->name('user.transaction-detail');
+    Route::get('/app/profile', [UserDashboardController::class, 'profile'])->name('user.profile');
+
+    Route::get('/app/payment/create', [UserDashboardController::class, 'showPaymentCreate'])->name('user.payment-create');
+    Route::post('/app/payment/create', [UserDashboardController::class, 'createQRCode'])->name('user.payment-create.store');
+    Route::get('/app/payment/input', [UserDashboardController::class, 'showPaymentInput'])->name('user.payment-input');
+    Route::get('/app/payment/qr/{qrCode}', [UserDashboardController::class, 'showQRCode'])->name('user.payment-show');
+
+    Route::get('/app/payment/confirm/{qrCode}', [UserDashboardController::class, 'showPaymentConfirm'])->name('user.payment-confirm');
+    Route::post('/app/payment/process', [UserDashboardController::class, 'processPayment'])->name('user.payment-process');
+});
 
