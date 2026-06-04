@@ -10,7 +10,7 @@
 
 <div class="container-fluid">
     <!-- Statistics Cards Row -->
-    <div class="row mb-4">
+    <div class="row mb-4 w-100">
         <div class="col-md-6 col-lg-2">
             <div class="stat-card">
                 <h6><i class="bi bi-people"></i> Total Users</h6>
