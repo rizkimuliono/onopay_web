@@ -11,7 +11,7 @@
 <div class="container-fluid">
     <!-- Statistics Cards Row -->
     <div class="row mb-4">
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-2">
             <div class="stat-card">
                 <h6><i class="bi bi-people"></i> Total Users</h6>
                 <div class="value">{{ number_format($totalUsers) }}</div>
@@ -19,7 +19,7 @@
             </div>
         </div>
 
-        <div class="col-md-6 col-lg-3">
+        <div class="col-md-6 col-lg-4">
             <div class="stat-card">
                 <h6><i class="bi bi-wallet2"></i> Total Saldo</h6>
                 <div class="value">Rp {{ number_format($totalBalance, 0) }}</div>
