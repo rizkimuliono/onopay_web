@@ -8,11 +8,6 @@ use App\Models\QRCode;
 use App\Models\SystemSetting;
 use App\Http\Controllers\Controller;
 use App\Http\Traits\ApiValidation;
-use Endroid\QrCode\Builder\Builder;
-use Endroid\QrCode\Encoding\Encoding;
-use Endroid\QrCode\ErrorCorrectionLevel;
-use Endroid\QrCode\RoundBlockSizeMode;
-use Endroid\QrCode\Writer\PngWriter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -230,19 +225,9 @@ class PaymentController extends Controller
             ], 403);
         }
 
-        $result = Builder::create()
-            ->writer(new PngWriter())
-            ->data($qr->code)
-            ->encoding(new Encoding('UTF-8'))
-            ->errorCorrectionLevel(ErrorCorrectionLevel::High)
-            ->size(400)
-            ->margin(10)
-            ->roundBlockSizeMode(RoundBlockSizeMode::Margin)
-            ->build();
+        $qrUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=400x400&margin=10&data=' . urlencode($qr->code);
 
-        return response($result->getString(), 200)
-            ->header('Content-Type', 'image/png')
-            ->header('Cache-Control', 'public, max-age=60');
+        return redirect()->away($qrUrl);
     }
 
     /**
