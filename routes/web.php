@@ -66,6 +66,7 @@ Route::middleware(['web', 'user.auth'])->group(function () {
     Route::get('/app/payment/create', [UserDashboardController::class, 'showPaymentCreate'])->name('user.payment-create');
     Route::post('/app/payment/create', [UserDashboardController::class, 'createQRCode'])->name('user.payment-create.store');
     Route::get('/app/payment/input', [UserDashboardController::class, 'showPaymentInput'])->name('user.payment-input');
+    Route::get('/app/payment/my-qr', [UserDashboardController::class, 'myQRCodes'])->name('user.payment-my-qr');
     Route::get('/app/payment/qr/{qrCode}', [UserDashboardController::class, 'showQRCode'])->name('user.payment-show');
 
     Route::get('/app/payment/confirm/{qrCode}', [UserDashboardController::class, 'showPaymentConfirm'])->name('user.payment-confirm');

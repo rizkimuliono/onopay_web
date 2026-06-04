@@ -15,7 +15,7 @@ Route::middleware(['json.response'])->prefix('v1')->group(function () {
     Route::post('/payment/qr/pay', [PaymentController::class, 'paymentQR']);
 });
 
-// Public QR image endpoint (no json.response middleware to avoid 415 for image content)
 Route::prefix('v1')->group(function () {
+    // Keep QR image endpoint outside json.response middleware to allow image/png response.
     Route::get('/payment/qr/image/{qrCode}', [PaymentController::class, 'qrImage'])->name('api.payment.qr-image');
 });

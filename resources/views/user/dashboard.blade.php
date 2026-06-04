@@ -273,6 +273,10 @@
                     <i class="bi bi-clock-history"></i>
                     <span>Riwayat</span>
                 </a>
+                <a href="{{ route('user.payment-my-qr') }}" class="action-btn">
+                    <i class="bi bi-list-check"></i>
+                    <span>Status QR</span>
+                </a>
             </div>
         </div>
 

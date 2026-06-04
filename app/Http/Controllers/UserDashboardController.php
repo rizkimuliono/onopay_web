@@ -66,6 +66,20 @@ class UserDashboardController extends Controller
         return view('user.payment-create', ['user' => $user]);
     }
 
+    // Show user's QR list and status
+    public function myQRCodes()
+    {
+        $user = User::find(session('user_id'));
+        $qrcodes = QRCode::where('user_id', $user->id)
+            ->latest()
+            ->paginate(15);
+
+        return view('user.my-qrcodes', [
+            'user' => $user,
+            'qrcodes' => $qrcodes,
+        ]);
+    }
+
     // Create QR Code
     public function createQRCode(Request $request)
     {

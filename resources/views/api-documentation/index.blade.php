@@ -611,8 +611,19 @@ print(response.json())</pre>
                                 <td><span class="status-badge status-optional">Optional</span></td>
                                 <td>Deskripsi pembayaran</td>
                             </tr>
+                            <tr>
+                                <td><code>qr_mode</code></td>
+                                <td><span class="parameter-type">string</span></td>
+                                <td><span class="status-badge status-optional">Optional</span></td>
+                                <td>Tipe QR: <code>single_use</code> (default) atau <code>reusable</code></td>
+                            </tr>
                         </tbody>
                     </table>
+
+                    <p class="desc-text" style="margin-top: 10px;">
+                        <strong>Catatan integrasi:</strong> OnoPay hanya mengembalikan <code>qr_image</code> berupa URL gambar QR.
+                        URL ini disimpan pada database <code>qr_codes.qr_image</code>, bukan mengirim file image mentah di response generate.
+                    </p>
 
                     <h6 style="margin-top: 20px; color: var(--primary-dark);">Contoh Request</h6>
                     <div class="code-example">
@@ -622,7 +633,8 @@ print(response.json())</pre>
     "phone_number": "08123456789",
     "amount": 50000,
     "merchant_code": "MERCHANT001",
-    "description": "Pembayaran makanan"
+        "description": "Pembayaran makanan",
+        "qr_mode": "single_use"
   }'</pre>
                     </div>
 
@@ -718,11 +730,12 @@ print(response.json())</pre>
                     <div style="background: #f9f9f9; padding: 20px; border-radius: 6px; margin: 20px 0; line-height: 2;">
                         <p><strong style="color: var(--primary-blue);">Langkah 1:</strong> Penerima uang (Seller/Merchant) membuat permintaan pembayaran</p>
                         <p style="margin-left: 40px; color: #666;"><code>POST /payment/qr/generate</code></p>
-                        <p style="margin-left: 40px; color: #666;">Input: phone_number, amount, description</p>
+                        <p style="margin-left: 40px; color: #666;">Input: phone_number, amount, description, qr_mode (single_use/reusable)</p>
                         <p style="margin-left: 40px; font-size: 0.9rem; color: #999;">↓ Sistem menghasilkan unique QR code ↓</p>
 
                         <p><strong style="color: var(--primary-blue);">Langkah 2:</strong> QR code dikomunikasikan ke pembayar</p>
                         <p style="margin-left: 40px; color: #666;">Via: WhatsApp, Email, SMS, atau media komunikasi lainnya</p>
+                        <p style="margin-left: 40px; color: #666;">Integrasi pihak ketiga menggunakan URL <code>qr_image</code> dari response</p>
                         <p style="margin-left: 40px; color: #666;">QR code berlaku selama 30 menit</p>
                         <p style="margin-left: 40px; font-size: 0.9rem; color: #999;">↓ Pembayar menerima dan menginput QR code ↓</p>
 
