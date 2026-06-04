@@ -28,7 +28,9 @@ class AuthController extends BaseController
         $admin = Admin::where('email', $validated['email'])->first();
 
         if (!$admin || !Hash::check($validated['password'], $admin->password)) {
-            return back()->withErrors(['email' => 'Email atau password salah']);
+            return back()
+                ->withInput($request->only('email'))
+                ->withErrors(['email' => 'Email atau password salah']);
         }
 
         // Use Laravel's Auth::guard()->login() method

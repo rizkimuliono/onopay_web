@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class UserController extends Controller
 {
@@ -48,7 +49,18 @@ class UserController extends Controller
             'status' => 'required|in:active,inactive,blocked',
         ]);
 
-        User::create($validated);
+            $validated = $request->validate([
+                'phone_number' => 'required|unique:onopay_users,phone_number|regex:/^08[0-9]{8,11}$/',
+                'name' => 'required|string|min:3|max:100',
+                'email' => 'required|unique:onopay_users,email|email',
+                'password' => 'required|string|min:8',
+                'balance' => 'required|numeric|min:0',
+                'status' => 'required|in:active,inactive,blocked',
+            ]);
+
+            $validated['password'] = Hash::make($validated['password']);
+
+            User::create($validated);
 
         return redirect()->route('user.index')
             ->with('success', 'User berhasil ditambahkan');
@@ -74,7 +86,22 @@ class UserController extends Controller
             'status' => 'required|in:active,inactive,blocked',
         ]);
 
-        $user->update($validated);
+            $validated = $request->validate([
+                'phone_number' => 'required|regex:/^08[0-9]{8,11}$/|unique:onopay_users,phone_number,' . $user->id,
+                'name' => 'required|string|min:3|max:100',
+                'email' => 'required|email|unique:onopay_users,email,' . $user->id,
+                'password' => 'nullable|string|min:8',
+                'balance' => 'required|numeric|min:0',
+                'status' => 'required|in:active,inactive,blocked',
+            ]);
+
+            if (!empty($validated['password'])) {
+                $validated['password'] = Hash::make($validated['password']);
+            } else {
+                unset($validated['password']);
+            }
+
+            $user->update($validated);
 
         return redirect()->route('user.show', $user)
             ->with('success', 'Data user berhasil diperbarui');

@@ -62,7 +62,29 @@
                 <div class="mb-4">
                     <label for="balance" class="form-label" style="color: #003d7a; font-weight: 600;">
                         Saldo <span style="color: #dc3545;">*</span>
-                    </label>
+                        </label>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-4">
+                        <label for="password" class="form-label" style="color: #003d7a; font-weight: 600;">
+                            Password <span style="color: #666;">(Opsional)</span>
+                        </label>
+                        <input type="password" class="form-control @error('password') is-invalid @enderror"
+                               id="password" name="password" placeholder="Kosongkan jika tidak ingin mengubah password">
+                        @error('password')
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                            </div>
+                        @enderror
+                        <small style="color: #666;">Minimal 8 karakter. Kosongkan jika tidak ingin diubah.</small>
+                    </div>
+
+                    <!-- Saldo -->
+                    <div class="mb-4">
+                        <label for="balance" class="form-label" style="color: #003d7a; font-weight: 600;">
+                            Saldo <span style="color: #dc3545;">*</span>
+                        </label>
                     <div class="input-group">
                         <span class="input-group-text" style="background-color: #f5f7fa; border: 1px solid #ddd;">Rp</span>
                         <input type="number" class="form-control @error('balance') is-invalid @enderror"
@@ -97,8 +119,8 @@
                 <div class="alert alert-info" style="background-color: #e6f2ff; border: 1px solid #0066cc; color: #003d7a; border-radius: 4px;">
                     <i class="bi bi-info-circle"></i> <strong>Informasi Tambahan:</strong>
                     <ul style="margin: 0.5rem 0 0 1.5rem; padding-left: 0;">
-                        <li>Dibuat: {{ $user->created_at->format('d M Y H:i') }}</li>
-                        <li>Diperbarui: {{ $user->updated_at->format('d M Y H:i') }}</li>
+                        <li>Dibuat: {{ $user->created_at ? $user->created_at->format('d M Y H:i') : '-' }}</li>
+                        <li>Diperbarui: {{ $user->updated_at ? $user->updated_at->format('d M Y H:i') : '-' }}</li>
                     </ul>
                 </div>
 

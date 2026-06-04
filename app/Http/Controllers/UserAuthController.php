@@ -31,11 +31,15 @@ class UserAuthController extends Controller
         $user = User::where('phone_number', $validated['phone_number'])->first();
 
         if (!$user || !Hash::check($validated['password'], $user->password)) {
-            return redirect()->back()->withErrors(['login' => 'Nomor telepon atau password salah']);
+            return redirect()->back()
+                ->withInput($request->only('phone_number'))
+                ->withErrors(['login' => 'Nomor telepon atau password salah']);
         }
 
         if ($user->status !== 'active') {
-            return redirect()->back()->withErrors(['login' => 'Akun Anda tidak aktif']);
+            return redirect()->back()
+                ->withInput($request->only('phone_number'))
+                ->withErrors(['login' => 'Akun Anda tidak aktif']);
         }
 
         session([

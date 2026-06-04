@@ -66,7 +66,29 @@
                 <div class="mb-4">
                     <label for="balance" class="form-label" style="color: #003d7a; font-weight: 600;">
                         Saldo Awal <span style="color: #dc3545;">*</span>
-                    </label>
+                        </label>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="mb-4">
+                        <label for="password" class="form-label" style="color: #003d7a; font-weight: 600;">
+                            Password <span style="color: #dc3545;">*</span>
+                        </label>
+                        <input type="password" class="form-control @error('password') is-invalid @enderror"
+                               id="password" name="password" placeholder="Masukkan password (min 8 karakter)" required>
+                        @error('password')
+                            <div class="invalid-feedback d-block">
+                                <i class="bi bi-exclamation-circle"></i> {{ $message }}
+                            </div>
+                        @enderror
+                        <small style="color: #666;">Minimal 8 karakter</small>
+                    </div>
+
+                    <!-- Saldo Awal -->
+                    <div class="mb-4">
+                        <label for="balance" class="form-label" style="color: #003d7a; font-weight: 600;">
+                            Saldo Awal <span style="color: #dc3545;">*</span>
+                        </label>
                     <div class="input-group">
                         <span class="input-group-text" style="background-color: #f5f7fa; border: 1px solid #ddd;">Rp</span>
                         <input type="number" class="form-control @error('balance') is-invalid @enderror"
